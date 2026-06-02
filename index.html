@@ -571,9 +571,158 @@ footer {
   body { cursor: auto; }
   #cursor-dot, #cursor-ring { display: none; }
 }
+
+/* === SCROLL PROGRESS BAR === */
+#scroll-progress {
+  position: fixed; top: 0; left: 0; z-index: 9999;
+  height: 2px; width: 0%;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+  transition: width 0.05s linear;
+  box-shadow: 0 0 10px var(--cyan);
+}
+
+/* === FLOATING PARTICLES === */
+#particles-canvas {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.55;
+}
+
+/* === PARALLAX LAYERS === */
+.parallax-text {
+  position: absolute;
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(5rem, 15vw, 14rem);
+  font-weight: 800;
+  letter-spacing: -6px;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(30,111,217,0.07);
+  text-stroke: 1px rgba(30,111,217,0.07);
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  z-index: 0;
+  will-change: transform;
+  line-height: 1;
+}
+
+/* === MAGNETIC CARDS === */
+.project-card { transform-style: preserve-3d; will-change: transform; }
+
+/* === SECTION TRANSITIONS === */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.visible { opacity: 1; transform: none; }
+.reveal-left { opacity: 0; transform: translateX(-40px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+.reveal-left.visible { opacity: 1; transform: none; }
+.reveal-right { opacity: 0; transform: translateX(40px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+.reveal-right.visible { opacity: 1; transform: none; }
+.reveal-scale { opacity: 0; transform: scale(0.92); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+.reveal-scale.visible { opacity: 1; transform: none; }
+
+/* === COUNTER NUMBERS === */
+.count-num { display: inline-block; }
+
+/* === SECTION LINE DRAW === */
+.line-draw {
+  display: block; height: 1px;
+  background: linear-gradient(90deg, var(--blue-light), transparent);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.9s cubic-bezier(0.16,1,0.3,1);
+  margin-bottom: 1rem;
+}
+.line-draw.visible { transform: scaleX(1); }
+
+/* === GLITCH EFFECT ON HERO NAME === */
+.hero h1 { position: relative; }
+
+/* === NAV ACTIVE INDICATOR === */
+.nav-links a { position: relative; }
+.nav-links a::after {
+  content: '';
+  position: absolute; bottom: -3px; left: 0; right: 0;
+  height: 1px;
+  background: var(--cyan);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.25s ease;
+}
+.nav-links a.active::after,
+.nav-links a:hover::after { transform: scaleX(1); }
+.nav-links a.active { color: var(--cyan); }
+
+/* === FLOATING SHAPES BG === */
+.float-shape {
+  position: absolute;
+  border: 1px solid rgba(30,111,217,0.08);
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* === HORIZONTAL SCROLL TICKER === */
+.ticker-wrap {
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 0;
+  background: rgba(10,25,41,0.6);
+  position: relative; z-index: 2;
+}
+.ticker-track {
+  display: flex; gap: 3rem;
+  white-space: nowrap;
+  animation: ticker 22s linear infinite;
+  width: max-content;
+}
+.ticker-item {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text3);
+  display: flex; align-items: center; gap: 12px;
+}
+.ticker-item::after {
+  content: '';
+  width: 4px; height: 4px;
+  background: var(--blue-light);
+  border-radius: 50%;
+  opacity: 0.5;
+}
+@keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+/* === SCROLL-DRIVEN SECTION NUMBERS === */
+.section-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 7rem;
+  font-weight: 800;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(30,111,217,0.1);
+  position: absolute;
+  top: 2rem; right: 3rem;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 0;
+  transition: transform 0.1s linear;
+}
+
+/* === GLOWING DIVIDER === */
+.glow-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--blue), var(--cyan), var(--blue), transparent);
+  margin: 0;
+  opacity: 0.3;
+}
 </style>
 </head>
 <body>
+
+<!-- Scroll progress -->
+<div id="scroll-progress"></div>
 
 <!-- Custom cursor -->
 <div id="cursor-dot"></div>
@@ -581,6 +730,9 @@ footer {
 
 <!-- Grid background -->
 <div class="grid-bg"></div>
+
+<!-- Particle canvas -->
+<canvas id="particles-canvas"></canvas>
 
 <!-- === ROBOT === -->
 <div id="robot-container">
@@ -704,11 +856,43 @@ footer {
   </div>
 </section>
 
+<!-- === TICKER === -->
+<div class="ticker-wrap">
+  <div class="ticker-track" id="ticker">
+    <span class="ticker-item">Laravel</span>
+    <span class="ticker-item">Vue.js</span>
+    <span class="ticker-item">PHP</span>
+    <span class="ticker-item">MySQL</span>
+    <span class="ticker-item">Inertia.js</span>
+    <span class="ticker-item">JavaScript</span>
+    <span class="ticker-item">Git</span>
+    <span class="ticker-item">REST APIs</span>
+    <span class="ticker-item">RBAC</span>
+    <span class="ticker-item">Bootstrap</span>
+    <span class="ticker-item">Full-Stack Dev</span>
+    <span class="ticker-item">Laravel</span>
+    <span class="ticker-item">Vue.js</span>
+    <span class="ticker-item">PHP</span>
+    <span class="ticker-item">MySQL</span>
+    <span class="ticker-item">Inertia.js</span>
+    <span class="ticker-item">JavaScript</span>
+    <span class="ticker-item">Git</span>
+    <span class="ticker-item">REST APIs</span>
+    <span class="ticker-item">RBAC</span>
+    <span class="ticker-item">Bootstrap</span>
+    <span class="ticker-item">Full-Stack Dev</span>
+  </div>
+</div>
+
+<div class="glow-divider"></div>
+
 <!-- === ABOUT === -->
-<section class="about" id="about">
+<section class="about" id="about" style="position:relative;overflow:hidden;">
+  <div class="parallax-text" data-speed="0.3" style="top:10%;left:-2%;opacity:0.5;">ABOUT</div>
+  <span class="section-num" data-speed="0.15">01</span>
   <div class="section-inner">
     <div class="about-grid">
-      <div class="reveal">
+      <div class="reveal-left">
         <p class="s-label">About</p>
         <h2 class="s-title">Building things<br>that actually work.</h2>
         <p class="s-desc">Fresh BSIT graduate focused on clean code and shipping software people actually use.</p>
@@ -758,7 +942,9 @@ footer {
 </section>
 
 <!-- === PROJECTS === -->
-<section class="projects" id="projects">
+<section class="projects" id="projects" style="position:relative;overflow:hidden;">
+  <div class="parallax-text" data-speed="0.25" style="bottom:5%;right:-2%;opacity:0.4;">WORK</div>
+  <span class="section-num" data-speed="0.15">02</span>
   <div class="section-inner">
     <p class="s-label reveal">Projects</p>
     <h2 class="s-title reveal">Things I've built</h2>
@@ -796,7 +982,8 @@ footer {
 </section>
 
 <!-- === OJT === -->
-<section class="ojt" id="ojt">
+<section class="ojt" id="ojt" style="position:relative;overflow:hidden;">
+  <span class="section-num" data-speed="0.15">03</span>
   <div class="section-inner">
     <p class="s-label reveal">Experience</p>
     <h2 class="s-title reveal">On-the-Job Training</h2>
@@ -821,7 +1008,9 @@ footer {
 </section>
 
 <!-- === SKILLS === -->
-<section class="skills-section" id="skills">
+<section class="skills-section" id="skills" style="position:relative;overflow:hidden;">
+  <div class="parallax-text" data-speed="0.2" style="top:15%;left:-1%;opacity:0.4;">SKILLS</div>
+  <span class="section-num" data-speed="0.15">04</span>
   <div class="section-inner">
     <p class="s-label reveal">Technical Skills</p>
     <h2 class="s-title reveal">What I work with</h2>
@@ -874,7 +1063,8 @@ footer {
 </section>
 
 <!-- === CERTS === -->
-<section class="certs" id="certifications">
+<section class="certs" id="certifications" style="position:relative;overflow:hidden;">
+  <span class="section-num" data-speed="0.15">05</span>
   <div class="section-inner">
     <p class="s-label reveal">Certifications</p>
     <h2 class="s-title reveal">Activities &amp; Recognition</h2>
@@ -901,7 +1091,8 @@ footer {
 </section>
 
 <!-- === CONTACT === -->
-<section class="contact" id="contact">
+<section class="contact" id="contact" style="position:relative;overflow:hidden;">
+  <span class="section-num" data-speed="0.15" style="-webkit-text-stroke:1px rgba(59,158,255,0.12);">06</span>
   <div class="section-inner">
     <p class="s-label reveal">Contact</p>
     <h2 class="s-title reveal">Let's work together</h2>
@@ -948,13 +1139,21 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
-// === SCROLL REVEAL ===
+// === SCROLL PROGRESS BAR ===
+const progressBar = document.getElementById('scroll-progress');
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  progressBar.style.width = (scrollTop / docHeight * 100) + '%';
+}, { passive: true });
+
+// === SCROLL REVEAL (multi-direction) ===
 const revealObs = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
   });
-}, { threshold: 0.1 });
-document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .line-draw').forEach(el => revealObs.observe(el));
 
 // === SKILL BARS ===
 const barObs = new IntersectionObserver(entries => {
@@ -962,7 +1161,7 @@ const barObs = new IntersectionObserver(entries => {
     if (e.isIntersecting) {
       e.target.querySelectorAll('.skill-fill').forEach((bar, i) => {
         const w = bar.getAttribute('data-w');
-        setTimeout(() => { bar.style.width = w; }, i * 80);
+        setTimeout(() => { bar.style.width = w; }, i * 90);
       });
       barObs.unobserve(e.target);
     }
@@ -971,115 +1170,274 @@ const barObs = new IntersectionObserver(entries => {
 const skillSection = document.getElementById('skill-bars');
 if (skillSection) barObs.observe(skillSection);
 
+// === COUNTER ANIMATION ===
+function animateCount(el, target, suffix, duration) {
+  let start = 0;
+  const step = target / (duration / 16);
+  const timer = setInterval(() => {
+    start = Math.min(start + step, target);
+    el.textContent = Math.floor(start) + suffix;
+    if (start >= target) clearInterval(timer);
+  }, 16);
+}
+const countObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.stat-num').forEach(card => {
+        const raw = card.textContent.trim();
+        const num = parseInt(raw);
+        const suffix = raw.replace(/[0-9]/g, '');
+        const span = card.querySelector('.count-num') || card;
+        setTimeout(() => animateCount(span, num, suffix, 1200), 200);
+      });
+      countObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.4 });
+document.querySelectorAll('.about-stats').forEach(el => countObs.observe(el));
+
+// === PARALLAX SCROLL ===
+const parallaxEls = document.querySelectorAll('.parallax-text, .section-num');
+const heroOrbs = document.querySelectorAll('.hero-orb');
+let ticking = false;
+
+function onScroll() {
+  if (!ticking) {
+    requestAnimationFrame(() => {
+      const sy = window.scrollY;
+
+      // Parallax big text
+      parallaxEls.forEach(el => {
+        const speed = parseFloat(el.getAttribute('data-speed') || 0.2);
+        const rect = el.closest('section')?.getBoundingClientRect();
+        if (rect) {
+          const offset = (window.innerHeight / 2 - rect.top) * speed;
+          el.style.transform = `translateY(${offset}px)`;
+        }
+      });
+
+      // Hero orbs parallax
+      heroOrbs.forEach((orb, i) => {
+        const speed = i === 0 ? 0.18 : 0.1;
+        orb.style.transform = `translateY(${sy * speed}px)`;
+      });
+
+      ticking = false;
+    });
+    ticking = true;
+  }
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+
+// === ACTIVE NAV ===
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+const navObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id);
+      });
+    }
+  });
+}, { threshold: 0.4 });
+sections.forEach(s => navObs.observe(s));
+
 // === CUSTOM CURSOR ===
 const dot = document.getElementById('cursor-dot');
 const ring = document.getElementById('cursor-ring');
 let mx = -100, my = -100, rx = -100, ry = -100;
-
 document.addEventListener('mousemove', e => {
   mx = e.clientX; my = e.clientY;
-  dot.style.left = mx + 'px';
-  dot.style.top = my + 'px';
+  dot.style.left = mx + 'px'; dot.style.top = my + 'px';
 });
-
 function animRing() {
-  rx += (mx - rx) * 0.12;
-  ry += (my - ry) * 0.12;
-  ring.style.left = rx + 'px';
-  ring.style.top = ry + 'px';
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
   requestAnimationFrame(animRing);
 }
 animRing();
-
 document.querySelectorAll('a, button, .project-card, .skill-cat, .cert-item, .contact-item').forEach(el => {
   el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
   el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+});
+
+// === MAGNETIC PROJECT CARDS (3D tilt) ===
+document.querySelectorAll('.project-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    const x = e.clientX - r.left - r.width / 2;
+    const y = e.clientY - r.top - r.height / 2;
+    const rotX = -(y / r.height) * 8;
+    const rotY = (x / r.width) * 8;
+    card.style.transform = `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateY(-4px)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+  });
 });
 
 // === ROBOT EYE TRACKING ===
 const robotContainer = document.getElementById('robot-container');
 const leftPupil = document.getElementById('left-pupil');
 const rightPupil = document.getElementById('right-pupil');
-const robotHead = document.getElementById('robot-head');
-
-// Get eye center positions in SVG coords
 const LEFT_EYE_CENTER = { x: 40, y: 34 };
 const RIGHT_EYE_CENTER = { x: 60, y: 34 };
 const MAX_PUPIL_OFFSET = 2.8;
-
 let targetLX = 40, targetLY = 34, targetRX = 60, targetRY = 34;
 let curLX = 40, curLY = 34, curRX = 60, curRY = 34;
 let robotTiltTarget = 0, robotTiltCurrent = 0;
-
 document.addEventListener('mousemove', e => {
   const rect = robotContainer.getBoundingClientRect();
   const robotCenterX = rect.left + rect.width / 2;
   const robotCenterY = rect.top + rect.height * 0.35;
-
   const dx = e.clientX - robotCenterX;
   const dy = e.clientY - robotCenterY;
   const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-
-  const nx = dx / dist;
-  const ny = dy / dist;
-
+  const nx = dx / dist; const ny = dy / dist;
   targetLX = LEFT_EYE_CENTER.x + nx * MAX_PUPIL_OFFSET;
   targetLY = LEFT_EYE_CENTER.y + ny * MAX_PUPIL_OFFSET;
   targetRX = RIGHT_EYE_CENTER.x + nx * MAX_PUPIL_OFFSET;
   targetRY = RIGHT_EYE_CENTER.y + ny * MAX_PUPIL_OFFSET;
-
-  // Slight head tilt based on horizontal cursor position
-  const normX = (e.clientX / window.innerWidth - 0.5) * 2;
-  robotTiltTarget = normX * 6;
+  robotTiltTarget = ((e.clientX / window.innerWidth) - 0.5) * 2 * 6;
 });
-
 function animRobot() {
-  curLX += (targetLX - curLX) * 0.1;
-  curLY += (targetLY - curLY) * 0.1;
-  curRX += (targetRX - curRX) * 0.1;
-  curRY += (targetRY - curRY) * 0.1;
+  curLX += (targetLX - curLX) * 0.1; curLY += (targetLY - curLY) * 0.1;
+  curRX += (targetRX - curRX) * 0.1; curRY += (targetRY - curRY) * 0.1;
   robotTiltCurrent += (robotTiltTarget - robotTiltCurrent) * 0.06;
-
-  leftPupil.setAttribute('cx', curLX.toFixed(2));
-  leftPupil.setAttribute('cy', curLY.toFixed(2));
-  rightPupil.setAttribute('cx', curRX.toFixed(2));
-  rightPupil.setAttribute('cy', curRY.toFixed(2));
-
-  // Head tilt
+  leftPupil.setAttribute('cx', curLX.toFixed(2)); leftPupil.setAttribute('cy', curLY.toFixed(2));
+  rightPupil.setAttribute('cx', curRX.toFixed(2)); rightPupil.setAttribute('cy', curRY.toFixed(2));
   robotContainer.querySelector('.robot-svg').style.transform = `rotate(${robotTiltCurrent.toFixed(2)}deg)`;
-
   requestAnimationFrame(animRobot);
 }
 animRobot();
 
 // === ROBOT BLINK ===
 function blink() {
-  const eyes = document.querySelectorAll('#left-eye rect:first-child, #right-eye rect:first-child');
-  // Simulate blink by briefly scaling eyes vertically
-  const svg = document.querySelector('.robot-svg');
   const leftEye = document.getElementById('left-eye');
   const rightEye = document.getElementById('right-eye');
-  leftEye.style.transform = 'scaleY(0.1)';
-  leftEye.style.transformOrigin = '40px 34px';
-  rightEye.style.transform = 'scaleY(0.1)';
-  rightEye.style.transformOrigin = '60px 34px';
-  setTimeout(() => {
-    leftEye.style.transform = '';
-    rightEye.style.transform = '';
-  }, 120);
+  leftEye.style.transform = 'scaleY(0.1)'; leftEye.style.transformOrigin = '40px 34px';
+  rightEye.style.transform = 'scaleY(0.1)'; rightEye.style.transformOrigin = '60px 34px';
+  setTimeout(() => { leftEye.style.transform = ''; rightEye.style.transform = ''; }, 120);
   setTimeout(blink, 2800 + Math.random() * 3000);
 }
 setTimeout(blink, 2000);
 
-// === ROBOT HOVER WAVE ===
+// === ROBOT FLOAT ===
 let robotHoverBase = 0;
 function floatRobot() {
   robotHoverBase += 0.018;
-  const offsetY = Math.sin(robotHoverBase) * 4;
-  robotContainer.style.transform = `translateY(${offsetY.toFixed(2)}px)`;
+  robotContainer.style.transform = `translateY(${(Math.sin(robotHoverBase) * 4).toFixed(2)}px)`;
   requestAnimationFrame(floatRobot);
 }
 floatRobot();
+
+// === PARTICLE CANVAS ===
+const canvas = document.getElementById('particles-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+
+function resizeCanvas() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor() { this.reset(true); }
+  reset(init) {
+    this.x = Math.random() * W;
+    this.y = init ? Math.random() * H : H + 10;
+    this.size = Math.random() * 1.5 + 0.3;
+    this.speedY = -(Math.random() * 0.4 + 0.1);
+    this.speedX = (Math.random() - 0.5) * 0.15;
+    this.opacity = Math.random() * 0.5 + 0.1;
+    this.twinkleSpeed = Math.random() * 0.02 + 0.005;
+    this.twinkleDir = 1;
+  }
+  update() {
+    this.y += this.speedY;
+    this.x += this.speedX;
+    this.opacity += this.twinkleSpeed * this.twinkleDir;
+    if (this.opacity > 0.65 || this.opacity < 0.05) this.twinkleDir *= -1;
+    if (this.y < -10) this.reset(false);
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(59,158,255,${this.opacity})`;
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 120; i++) particles.push(new Particle());
+
+// Shooting stars
+let shootingStars = [];
+function addShootingStar() {
+  if (Math.random() > 0.3) return;
+  shootingStars.push({
+    x: Math.random() * W, y: Math.random() * H * 0.5,
+    len: Math.random() * 100 + 60,
+    speed: Math.random() * 6 + 4,
+    opacity: 1,
+    angle: Math.PI / 6 + (Math.random() - 0.5) * 0.3
+  });
+}
+setInterval(addShootingStar, 2800);
+
+function animParticles() {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach(p => { p.update(); p.draw(); });
+
+  // Draw connections
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 90) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(30,111,217,${(1 - dist / 90) * 0.12})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Shooting stars
+  shootingStars.forEach((s, idx) => {
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.rotate(s.angle);
+    const grad = ctx.createLinearGradient(0, 0, s.len, 0);
+    grad.addColorStop(0, `rgba(0,212,255,${s.opacity})`);
+    grad.addColorStop(1, 'rgba(0,212,255,0)');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s.len, 0);
+    ctx.stroke();
+    ctx.restore();
+    s.x += Math.cos(s.angle) * s.speed;
+    s.y += Math.sin(s.angle) * s.speed;
+    s.opacity -= 0.022;
+    if (s.opacity <= 0) shootingStars.splice(idx, 1);
+  });
+
+  requestAnimationFrame(animParticles);
+}
+animParticles();
+
+// === STAGGERED REVEAL with delay on children ===
+document.querySelectorAll('.projects-grid, .skills-cats, .certs-list').forEach(grid => {
+  const children = grid.querySelectorAll('.project-card, .skill-cat, .cert-item');
+  children.forEach((child, i) => {
+    child.style.transitionDelay = (i * 0.07) + 's';
+  });
+});
 </script>
 </body>
 </html>
